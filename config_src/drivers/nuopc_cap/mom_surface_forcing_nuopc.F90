@@ -16,7 +16,7 @@ use MOM_diag_mediator,    only : safe_alloc_ptr, time_type
 use MOM_domains,          only : pass_vector, pass_var, fill_symmetric_edges
 use MOM_domains,          only : AGRID, BGRID_NE, CGRID_NE, To_All
 use MOM_domains,          only : To_North, To_East, Omit_Corners
-use MOM_error_handler,    only : MOM_error, WARNING, FATAL, is_root_pe, MOM_mesg
+use MOM_error_handler,    only : MOM_error, NOTE, WARNING, FATAL, is_root_pe, MOM_mesg
 use MOM_file_parser,      only : get_param, log_param, log_version, param_file_type
 use MOM_forcing_type,     only : forcing, mech_forcing
 use MOM_forcing_type,     only : forcing_diags, mech_forcing_diags, register_forcing_type_diags
@@ -109,6 +109,31 @@ type, public :: surface_forcing_CS ; private
                                 !! typically of order 1000 kg m-2.
   logical :: allow_flux_adjustments !< If true, use data_override to obtain flux adjustments
   logical :: liquid_runoff_from_data !< If true, use data_override to obtain liquid runoff
+  logical :: p_from_data        !< If true, use data_override to obtain IOB%p
+  logical :: sw_flux_nir_dir_from_data !< If true, use data_override to obtain IOB%sw_flux_nir_dir
+  logical :: sw_flux_nir_dif_from_data !< If true, use data_override to obtain IOB%sw_flux_nir_dif
+  logical :: sw_flux_vis_dir_from_data !< If true, use data_override to obtain IOB%sw_flux_vis_dir
+  logical :: sw_flux_vis_dif_from_data !< If true, use data_override to obtain IOB%sw_flux_vis_dif
+  logical :: lw_flux_from_data  !< If true, use data_override to obtain IOB%lw_flux
+  logical :: u_flux_from_data   !< If true, use data_override to obtain IOB%u_flux
+  logical :: v_flux_from_data   !< If true, use data_override to obtain IOB%v_flux
+  logical :: t_flux_from_data   !< If true, use data_override to obtain IOB%t_flux
+  logical :: q_flux_from_data   !< If true, use data_override to obtain IOB%q_flux
+  logical :: lprec_from_data    !< If true, use data_override to obtain IOB%lprec
+  logical :: fprec_from_data    !< If true, use data_override to obtain IOB%fprec
+  logical :: frunoff_from_data  !< If true, use data_override to obtain IOB%frunoff
+  logical :: hrain_from_data    !< If true, use data_override to obtain IOB%hrain
+  logical :: hsnow_from_data    !< If true, use data_override to obtain IOB%hsnow
+  logical :: hrofl_from_data    !< If true, use data_override to obtain IOB%hrofl
+  logical :: hrofi_from_data    !< If true, use data_override to obtain IOB%hrofi
+  logical :: hevap_from_data    !< If true, use data_override to obtain IOB%hevap
+  logical :: hcond_from_data    !< If true, use data_override to obtain IOB%hcond
+  logical :: salt_flux_from_data !< If true, use data_override to obtain IOB%salt_flux
+  logical :: seaice_melt_heat_from_data !< If true, use data_override to obtain IOB%seaice_melt_heat
+  logical :: seaice_melt_from_data !< If true, use data_override to obtain IOB%seaice_melt
+  logical :: mi_from_data       !< If true, use data_override to obtain IOB%mi
+  logical :: ice_fraction_from_data !< If true, use data_override to obtain IOB%ice_fraction
+  logical :: u10_sqr_from_data  !< If true, use data_override to obtain IOB%u10_sqr
 
   real    :: Flux_const                     !< piston velocity for surface restoring [Z T-1 ~> m s-1]
   logical :: salt_restore_as_sflux          !< If true, SSS restore as salt flux instead of water flux
@@ -449,6 +474,191 @@ subroutine convert_IOB_to_fluxes(IOB, fluxes, index_bounds, Time, valid_time, G,
     if (CS%liquid_runoff_from_data) call data_override('OCN', 'runoff', IOB%lrunoff, Time)
   endif
 
+  ! Override fields coming from the coupler
+  ! IOB%p
+  if (associated(IOB%p)) then
+    if (CS%p_from_data) then
+      call MOM_error(NOTE, "IOB%p is being overridden via data_override")
+      call data_override('OCN', 'p', IOB%p, Time)
+    endif
+  endif
+
+  ! IOB%sw_flux_nir_dir
+  if (associated(IOB%sw_flux_nir_dir)) then
+    if (CS%sw_flux_nir_dir_from_data) then
+      call MOM_error(NOTE, "IOB%sw_flux_nir_dir is being overridden via data_override")
+      call data_override('OCN', 'sw_flux_nir_dir', IOB%sw_flux_nir_dir, Time)
+    endif
+  endif
+
+  ! IOB%sw_flux_nir_dif
+  if (associated(IOB%sw_flux_nir_dif)) then
+    if (CS%sw_flux_nir_dif_from_data) then
+      call MOM_error(NOTE, "IOB%sw_flux_nir_dif is being overridden via data_override")
+      call data_override('OCN', 'sw_flux_nir_dif', IOB%sw_flux_nir_dif, Time)
+    endif
+  endif
+
+  ! IOB%sw_flux_vis_dir
+  if (associated(IOB%sw_flux_vis_dir)) then
+    if (CS%sw_flux_vis_dir_from_data) then
+      call MOM_error(NOTE, "IOB%sw_flux_vis_dir is being overridden via data_override")
+      call data_override('OCN', 'sw_flux_vis_dir', IOB%sw_flux_vis_dir, Time)
+    endif
+  endif
+
+  ! IOB%sw_flux_vis_dif
+  if (associated(IOB%sw_flux_vis_dif)) then
+    if (CS%sw_flux_vis_dif_from_data) then
+      call MOM_error(NOTE, "IOB%sw_flux_vis_dif is being overridden via data_override")
+      call data_override('OCN', 'sw_flux_vis_dif', IOB%sw_flux_vis_dif, Time)
+    endif
+  endif
+
+  ! IOB%lw_flux
+  if (associated(IOB%lw_flux)) then
+    if (CS%lw_flux_from_data) then
+      call MOM_error(NOTE, "IOB%lw_flux is being overridden via data_override")
+      call data_override('OCN', 'lw_flux', IOB%lw_flux, Time)
+    endif
+  endif
+
+  ! IOB%t_flux
+  if (associated(IOB%t_flux)) then
+    if (CS%t_flux_from_data) then
+      call MOM_error(NOTE, "IOB%t_flux is being overridden via data_override")
+      call data_override('OCN', 't_flux', IOB%t_flux, Time)
+    endif
+  endif
+
+  ! IOB%q_flux
+  if (associated(IOB%q_flux)) then
+    if (CS%q_flux_from_data) then
+      call MOM_error(NOTE, "IOB%q_flux is being overridden via data_override")
+      call data_override('OCN', 'q_flux', IOB%q_flux, Time)
+    endif
+  endif
+
+  ! IOB%lprec
+  if (associated(IOB%lprec)) then
+    if (CS%lprec_from_data) then
+      call MOM_error(NOTE, "IOB%lprec is being overridden via data_override")
+      call data_override('OCN', 'lprec', IOB%lprec, Time)
+    endif
+  endif
+
+  ! IOB%fprec
+  if (associated(IOB%fprec)) then
+    if (CS%fprec_from_data) then
+      call MOM_error(NOTE, "IOB%fprec is being overridden via data_override")
+      call data_override('OCN', 'fprec', IOB%fprec, Time)
+    endif
+  endif
+
+  ! IOB%frunoff
+  if (associated(IOB%frunoff)) then
+    if (CS%frunoff_from_data) then
+      call MOM_error(NOTE, "IOB%frunoff is being overridden via data_override")
+      call data_override('OCN', 'frunoff', IOB%frunoff, Time)
+    endif
+  endif
+
+  ! IOB%hrain
+  if (associated(IOB%hrain)) then
+    if (CS%hrain_from_data) then
+      call MOM_error(NOTE, "IOB%hrain is being overridden via data_override")
+      call data_override('OCN', 'hrain', IOB%hrain, Time)
+    endif
+  endif
+
+  ! IOB%hsnow
+  if (associated(IOB%hsnow)) then
+    if (CS%hsnow_from_data) then
+      call MOM_error(NOTE, "IOB%hsnow is being overridden via data_override")
+      call data_override('OCN', 'hsnow', IOB%hsnow, Time)
+    endif
+  endif
+
+  ! IOB%hrofl
+  if (associated(IOB%hrofl)) then
+    if (CS%hrofl_from_data) then
+      call MOM_error(NOTE, "IOB%hrofl is being overridden via data_override")
+      call data_override('OCN', 'hrofl', IOB%hrofl, Time)
+    endif
+  endif
+
+  ! IOB%hrofi
+  if (associated(IOB%hrofi)) then
+    if (CS%hrofi_from_data) then
+      call MOM_error(NOTE, "IOB%hrofi is being overridden via data_override")
+      call data_override('OCN', 'hrofi', IOB%hrofi, Time)
+    endif
+  endif
+
+  ! IOB%hevap
+  if (associated(IOB%hevap)) then
+    if (CS%hevap_from_data) then
+      call MOM_error(NOTE, "IOB%hevap is being overridden via data_override")
+      call data_override('OCN', 'hevap', IOB%hevap, Time)
+    endif
+  endif
+
+  ! IOB%hcond
+  if (associated(IOB%hcond)) then
+    if (CS%hcond_from_data) then
+      call MOM_error(NOTE, "IOB%hcond is being overridden via data_override")
+      call data_override('OCN', 'hcond', IOB%hcond, Time)
+    endif
+  endif
+
+  ! IOB%salt_flux
+  if (associated(IOB%salt_flux)) then
+    if (CS%salt_flux_from_data) then
+      call MOM_error(NOTE, "IOB%salt_flux is being overridden via data_override")
+      call data_override('OCN', 'salt_flux', IOB%salt_flux, Time)
+    endif
+  endif
+
+  ! IOB%seaice_melt_heat
+  if (associated(IOB%seaice_melt_heat)) then
+    if (CS%seaice_melt_heat_from_data) then
+      call MOM_error(NOTE, "IOB%seaice_melt_heat is being overridden via data_override")
+      call data_override('OCN', 'seaice_melt_heat', IOB%seaice_melt_heat, Time)
+    endif
+  endif
+
+  ! IOB%seaice_melt
+  if (associated(IOB%seaice_melt)) then
+    if (CS%seaice_melt_from_data) then
+      call MOM_error(NOTE, "IOB%seaice_melt is being overridden via data_override")
+      call data_override('OCN', 'seaice_melt', IOB%seaice_melt, Time)
+    endif
+  endif
+
+  ! IOB%mi
+  if (associated(IOB%mi)) then
+    if (CS%mi_from_data) then
+      call MOM_error(NOTE, "IOB%mi is being overridden via data_override")
+      call data_override('OCN', 'mi', IOB%mi, Time)
+    endif
+  endif
+
+  ! IOB%ice_fraction
+  if (associated(IOB%ice_fraction)) then
+    if (CS%ice_fraction_from_data) then
+      call MOM_error(NOTE, "IOB%ice_fraction is being overridden via data_override")
+      call data_override('OCN', 'ice_fraction', IOB%ice_fraction, Time)
+    endif
+  endif
+
+  ! IOB%u10_sqr
+  if (associated(IOB%u10_sqr)) then
+    if (CS%u10_sqr_from_data) then
+      call MOM_error(NOTE, "IOB%u10_sqr is being overridden via data_override")
+      call data_override('OCN', 'u10_sqr', IOB%u10_sqr, Time)
+    endif
+  endif
+
   ! obtain fluxes from IOB; note the staggering of indices
   i0 = is - isc_bnd ; j0 = js - jsc_bnd
   do j=js,je ; do i=is,ie
@@ -765,6 +975,23 @@ subroutine convert_IOB_to_forces(IOB, forces, index_bounds, Time, G, US, CS)
 #else
   wind_stagger = CS%wind_stagger
 #endif
+
+  ! Override fields coming from the coupler
+  ! IOB%u_flux
+  if (associated(IOB%u_flux)) then
+    if (CS%u_flux_from_data) then
+      call MOM_error(NOTE, "IOB%u_flux is being overridden via data_override")
+      call data_override('OCN', 'u_flux', IOB%u_flux, Time)
+    endif
+  endif
+
+  ! IOB%v_flux
+  if (associated(IOB%v_flux)) then
+    if (CS%v_flux_from_data) then
+      call MOM_error(NOTE, "IOB%v_flux is being overridden via data_override")
+      call data_override('OCN', 'v_flux', IOB%v_flux, Time)
+    endif
+  endif
 
   if (wind_stagger == BGRID_NE) then
     ! This is necessary to fill in the halo points.
@@ -1409,7 +1636,116 @@ subroutine surface_forcing_init(Time, G, US, param_file, diag, CS, restore_salt,
                  "If true, allows liquid river runoff to be specified via the "//&
                  "data_table using the component name 'OCN'.", default=.false.)
 
-  if (CS%allow_flux_adjustments .or. CS%liquid_runoff_from_data) then
+  call get_param(param_file, mdl, "P_FROM_DATA", CS%p_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "SW_FLUX_NIR_DIR_FROM_DATA", CS%sw_flux_nir_dir_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "SW_FLUX_NIR_DIF_FROM_DATA", CS%sw_flux_nir_dif_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "SW_FLUX_VIS_DIR_FROM_DATA", CS%sw_flux_vis_dir_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "SW_FLUX_VIS_DIF_FROM_DATA", CS%sw_flux_vis_dif_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "LW_FLUX_FROM_DATA", CS%lw_flux_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "U_FLUX_FROM_DATA", CS%u_flux_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "V_FLUX_FROM_DATA", CS%v_flux_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "T_FLUX_FROM_DATA", CS%t_flux_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "Q_FLUX_FROM_DATA", CS%q_flux_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "LPREC_FROM_DATA", CS%lprec_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "FPREC_FROM_DATA", CS%fprec_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "FRUNOFF_FROM_DATA", CS%frunoff_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "HRAIN_FROM_DATA", CS%hrain_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "HSNOW_FROM_DATA", CS%hsnow_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "HROFL_FROM_DATA", CS%hrofl_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "HROFI_FROM_DATA", CS%hrofi_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "HEVAP_FROM_DATA", CS%hevap_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "HCOND_FROM_DATA", CS%hcond_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "SALT_FLUX_FROM_DATA", CS%salt_flux_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "SEAICE_MELT_HEAT_FROM_DATA", CS%seaice_melt_heat_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "SEAICE_MELT_FROM_DATA", CS%seaice_melt_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "MI_FROM_DATA", CS%mi_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "ICE_FRACTION_FROM_DATA", CS%ice_fraction_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  call get_param(param_file, mdl, "U10_SQR_FROM_DATA", CS%u10_sqr_from_data, &
+                 "If true, allows p to be specified via the "//&
+                 "data_table using the component name 'OCN'.", default=.false.)
+
+  if (CS%allow_flux_adjustments .or. CS%liquid_runoff_from_data .or. CS%p_from_data .or. &
+      CS%sw_flux_nir_dir_from_data .or. CS%sw_flux_nir_dif_from_data .or. &
+      CS%sw_flux_vis_dir_from_data .or. CS%sw_flux_vis_dif_from_data .or. &
+      CS%lw_flux_from_data .or. CS%u_flux_from_data .or. CS%v_flux_from_data .or. &
+      CS%t_flux_from_data .or. CS%q_flux_from_data .or. CS%lprec_from_data .or. &
+      CS%fprec_from_data .or. CS%frunoff_from_data .or. CS%hrain_from_data .or. &
+      CS%hsnow_from_data .or. CS%hrofl_from_data .or. CS%hrofi_from_data .or. &
+      CS%hevap_from_data .or. CS%hcond_from_data .or. CS%salt_flux_from_data .or. &
+      CS%seaice_melt_heat_from_data .or. CS%seaice_melt_from_data .or. CS%mi_from_data .or. &
+      CS%ice_fraction_from_data .or. CS%u10_sqr_from_data) then
     call data_override_init(Ocean_domain_in=G%Domain%mpp_domain)
   endif
 
