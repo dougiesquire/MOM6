@@ -3042,6 +3042,15 @@ subroutine initialize_MOM(Time, Time_init, param_file, dirs, CS, &
     endif
   endif
 
+  ! DTS ======
+  if (CS%debug) then
+    call uvchksum("Post MOM_initialize_state [uv]", CS%u, CS%v, G%HI, haloshift=1, unscale=US%L_T_to_m_s)
+    call hchksum(CS%h,"Post MOM_initialize_state h", G%HI, haloshift=1, unscale=GV%H_to_MKS)
+    call uvchksum("Post MOM_initialize_state [uv] (no halo)", CS%u, CS%v, G%HI, haloshift=0, unscale=US%L_T_to_m_s)
+    call hchksum(CS%h,"Post MOM_initialize_state h (no halo)", G%HI, haloshift=0, unscale=GV%H_to_MKS)
+  endif
+  ! DTS ======
+
   ! Allocate any derived densities or other equation of state derived fields.
   if (.not.(GV%Boussinesq .or. GV%semi_Boussinesq)) then
     allocate(CS%tv%SpV_avg(isd:ied,jsd:jed,nz), source=0.0)
@@ -3438,6 +3447,15 @@ subroutine initialize_MOM(Time, Time_init, param_file, dirs, CS, &
 
   ! initialize stochastic physics
   call stochastics_init(CS%dt_therm, CS%G, CS%GV, CS%stoch_CS, param_file, diag, Time)
+
+  ! DTS ======
+  if (CS%debug) then
+    call uvchksum("Post initialize_MOM [uv]", CS%u, CS%v, G%HI, haloshift=1, unscale=US%L_T_to_m_s)
+    call hchksum(CS%h,"Post initialize_MOM h", G%HI, haloshift=1, unscale=GV%H_to_MKS)
+    call uvchksum("Post initialize_MOM [uv] (no halo)", CS%u, CS%v, G%HI, haloshift=0, unscale=US%L_T_to_m_s)
+    call hchksum(CS%h,"Post initialize_MOM h (no halo)", G%HI, haloshift=0, unscale=GV%H_to_MKS)
+  endif
+  ! DTS ======
 
   call callTree_leave("initialize_MOM()")
   call cpu_clock_end(id_clock_init)
@@ -4177,8 +4195,19 @@ subroutine save_MOM_restart(CS, directory, time, G, time_stamped, filename, &
   logical, optional, intent(in) :: write_IC
     !< If present and true, initial conditions are being written
 
+  type(unit_scale_type),  pointer :: US => NULL()
   logical :: showCallTree
   showCallTree = callTree_showQuery()
+
+  ! DTS ======
+  if (CS%debug) then
+    US => CS%US
+    call uvchksum("Pre save_restart [uv]", CS%u, CS%v, G%HI, haloshift=1, unscale=US%L_T_to_m_s)
+    call hchksum(CS%h,"Pre save_restart h", G%HI, haloshift=1, unscale=GV%H_to_MKS)
+    call uvchksum("Pre save_restart [uv] (no halo)", CS%u, CS%v, G%HI, haloshift=0, unscale=US%L_T_to_m_s)
+    call hchksum(CS%h,"Pre save_restart h (no halo)", G%HI, haloshift=0, unscale=GV%H_to_MKS)
+  endif
+  ! DTS ======
 
   if (showCallTree) call callTree_waypoint("About to call save_restart (step_MOM)")
   call save_restart(directory, time, G, CS%restart_CS, &
